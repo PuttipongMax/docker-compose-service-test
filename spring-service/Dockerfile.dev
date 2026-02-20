@@ -1,0 +1,17 @@
+# ใช้ JDK เต็มรูปแบบ (ไม่ใช่ JRE) เพื่อให้สามารถใช้ Spring Boot DevTools ได้ (และเป็น Base เดียวกับ Prod)
+FROM eclipse-temurin:17-jdk-jammy
+
+WORKDIR /app
+
+# Copy ตัว Wrapper ของ Maven และไฟล์ Config
+# (ตรวจสอบว่าในโปรเจกต์มี folder .mvn และไฟล์ mvnw ถ้าไม่มีให้ใช้ FROM maven:3.8-openjdk-17 แทน)
+COPY .mvn/ .mvn
+COPY mvnw pom.xml ./
+
+# สั่งให้โหลด Dependency มารอไว้ก่อน (Cache Layer)
+# เพื่อให้ตอนรันจริงไม่ต้องโหลดใหม่ทุกรอบ
+RUN ./mvnw dependency:go-offline
+
+# สั่งรัน Spring Boot ในโหมด Development
+# (คำสั่งนี้จะถูก Override ได้ง่าย หรือรันค้างไว้รอ code เปลี่ยน)
+CMD ["./mvnw", "spring-boot:run"]
