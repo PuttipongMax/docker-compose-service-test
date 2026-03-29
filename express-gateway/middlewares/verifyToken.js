@@ -7,6 +7,7 @@ const verifyToken = (req, res, next) => {
     // รูปแบบของ Header จะมาเป็น "Bearer eyJhbGciOiJIUzI1..." เราเลยต้อง split เอาช่องว่างออกแล้วเอาตัวที่ 2
     const token = authHeader && authHeader.split(' ')[1]; 
 
+    console.log("Token ที่รับมาจาก React คือ:", token);
     // 2. ถ้าไม่มี Token แนบมาด้วย ให้เตะกลับทันที (401 Unauthorized)
     if (!token) {
         return res.status(401).json({ message: 'Access Denied: No Token Provided!' });

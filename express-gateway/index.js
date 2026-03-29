@@ -34,6 +34,9 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
     console.log(`=========================================`);
     console.log(`🌐 API Gateway กำลังรันอยู่ที่ Port: ${PORT}`);
-    console.log(`🔗 Proxy [Auth] : /api/auth -> ${process.env.JAVA_URL || 'http://app-java-spring:8080'}/internal/auth`);
+    console.log(`🔗 Proxy [Auth]   : /api/auth -> ${process.env.JAVA_AUTH_URL || 'http://localhost:8080/internal/auth'}`);
+    console.log(`🔗 Proxy [Java]   : /java-api -> ${process.env.SPRING_URL || 'http://localhost:8080'}`);
+    console.log(`🔗 Proxy [PHP]    : /legacy   -> ${process.env.PHP_URL || 'http://localhost:80'}`);
+    console.log(`🚀 Proxy [Python] : /api/language -> ${process.env.PYTHON_URL || 'http://python-fastapi:8000'}`);
     console.log(`=========================================`);
 });
