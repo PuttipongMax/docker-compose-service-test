@@ -35,6 +35,22 @@ const setupProxies = (app) => {
         },
         onProxyReq: onProxyReq // <-- เรียกใช้ฟังก์ชันแนบ Header
     }));
+
+    // ---------------------------------------------------------
+    // 3. 🚀 Proxy ไปหา Python FastAPI (ระบบแปลภาษา)
+    // ---------------------------------------------------------
+    // เมื่อ React เรียกมาที่ /api/language/... จะโดนเช็ค Token ก่อน
+    // ถ้าผ่าน จะถูกโยนไปหา Python พร้อมแนบ X-User-Id ไปด้วย
+    app.use('/api/language', verifyToken, createProxyMiddleware({
+        target: process.env.PYTHON_URL || 'http://python-fastapi:8000',
+        changeOrigin: true,
+        // ไม่ต้องมี pathRewrite เพราะ Python ของเรารับ path เป็น /api/language/process ตรงๆ อยู่แล้ว
+        onProxyReq: onProxyReq,
+        onError: (err, req, res) => {
+            console.error('[Gateway] Python Proxy Error:', err.message);
+            res.status(502).json({ message: "Bad Gateway: Cannot connect to AI Service" });
+        }
+    }));
 };
 
 module.exports = setupProxies;

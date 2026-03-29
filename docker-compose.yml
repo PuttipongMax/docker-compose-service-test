@@ -95,6 +95,7 @@ services:
       - JAVA_AUTH_URL=${JAVA_AUTH_URL}
       - SPRING_URL=${SPRING_URL}
       - PHP_URL=${PHP_URL}
+      - PYTHON_URL=http://python-fastapi:8000
     ports:
       - "3000:3000"
     volumes:
@@ -130,6 +131,27 @@ services:
       - react-vite
       - express-api-gateway
       - php-apache
+    networks:
+      - app-network
+
+  # ----------------------------------------
+  # AI & Language Service (FastAPI)
+  # ----------------------------------------
+  python-fastapi:
+    build: 
+      context: ./python-service
+      # dockerfile: Dockerfile (ถ้ามีชื่อไฟล์เฉพาะระบุได้ที่นี่)
+    container_name: app-python-fastapi
+    restart: always
+    ports:
+      - "8000:8000"
+    volumes:
+      # Map Source Code สำหรับ Hot Reload (เวลาแก้โค้ด Python จะได้อัปเดตทันที)
+      - ./python-service:/app
+    environment:
+      # เตรียม Environment Variables เผื่อต่อ DB หรือเรียกใช้ AI API
+      - DB_URL=postgresql://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}
+      - AI_API_KEY=${AI_API_KEY} 
     networks:
       - app-network
 

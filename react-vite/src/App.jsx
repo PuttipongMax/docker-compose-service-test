@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import AuthPage from './pages/AuthPage';
 import Profile from './pages/Profile';
 import KanbanPage from './pages/KanbanPage';
+import TranslatePage from './pages/TranslatePage';
 
 function App() {
   
@@ -28,6 +29,7 @@ function App() {
       <Route path="/auth" element={<AuthPage />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/kanban" element={<KanbanPage />} />
+      <Route path="/translate" element={<TranslatePage />} />
     </Routes>
   );
 }
