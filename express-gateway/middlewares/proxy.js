@@ -51,6 +51,20 @@ const setupProxies = (app) => {
             res.status(502).json({ message: "Bad Gateway: Cannot connect to AI Service" });
         }
     }));
+
+    // ---------------------------------------------------------
+    // 4. 🎵 Proxy ไปหา Python Audio Service (ระบบแยกเสียง)
+    // ---------------------------------------------------------
+    app.use('/api/audio', verifyToken, createProxyMiddleware({
+        target: process.env.AUDIO_URL || 'http://python-audio-service:8002', // ชี้ไปที่ Container ใหม่
+        changeOrigin: true,
+        onProxyReq: onProxyReq,
+        // สำคัญมาก: ต้องเพิ่มเวลา Timeout เป็น 2 นาที (120000ms) 
+        // เพราะ AI Spleeter จะใช้เวลาประมวลผลไฟล์เสียงครับ
+        // 🚀 เพิ่มความอดทนให้รอ AI ได้สูงสุด 10 นาที (600000 ms)
+        proxyTimeout: 600000, 
+        timeout: 600000,
+    }));    
 };
 
 module.exports = setupProxies;

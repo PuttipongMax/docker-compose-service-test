@@ -31,7 +31,8 @@ app.get('/', (req, res) => {
 });
 
 // เริ่มเดินเครื่อง Server
-app.listen(PORT, () => {
+// เริ่มเดินเครื่อง Server
+const server = app.listen(PORT, () => {
     console.log(`=========================================`);
     console.log(`🌐 API Gateway กำลังรันอยู่ที่ Port: ${PORT}`);
     console.log(`🔗 Proxy [Auth]   : /api/auth -> ${process.env.JAVA_AUTH_URL || 'http://localhost:8080/internal/auth'}`);
@@ -40,3 +41,22 @@ app.listen(PORT, () => {
     console.log(`🚀 Proxy [Python] : /api/language -> ${process.env.PYTHON_URL || 'http://python-fastapi:8000'}`);
     console.log(`=========================================`);
 });
+
+// 🚀 สูตรคอมโบ: สั่งให้ Gateway อดทนรอ AI แบบ 100% (10 นาที)
+server.timeout = 600000;
+server.setTimeout(600000);
+server.keepAliveTimeout = 600000;
+server.headersTimeout = 600000; // ต้องมากกว่าหรือเท่ากับ keepAlive
+
+// app.listen(PORT, () => {
+//     console.log(`=========================================`);
+//     console.log(`🌐 API Gateway กำลังรันอยู่ที่ Port: ${PORT}`);
+//     console.log(`🔗 Proxy [Auth]   : /api/auth -> ${process.env.JAVA_AUTH_URL || 'http://localhost:8080/internal/auth'}`);
+//     console.log(`🔗 Proxy [Java]   : /java-api -> ${process.env.SPRING_URL || 'http://localhost:8080'}`);
+//     console.log(`🔗 Proxy [PHP]    : /legacy   -> ${process.env.PHP_URL || 'http://localhost:80'}`);
+//     console.log(`🚀 Proxy [Python] : /api/language -> ${process.env.PYTHON_URL || 'http://python-fastapi:8000'}`);
+//     console.log(`=========================================`);
+// }).setTimeout(600000);
+
+// 🚀 สั่งให้ตัว Server หลักรอได้สูงสุด 10 นาทีเช่นกัน
+// server.setTimeout(600000);

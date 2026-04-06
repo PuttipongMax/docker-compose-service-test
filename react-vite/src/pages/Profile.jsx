@@ -76,6 +76,18 @@ function Profile() {
             เปิดหน้า Traslate (CN:TH:EN)
           </Link>
 
+          {/* ปุ่มไปหน้า audio (ใช้ Link เพื่อให้สลับหน้าแบบไม่โหลดใหม่) */}
+          <Link 
+            to="/audio-analyzer"
+            className="flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-3 px-8 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all w-full"
+          >
+            {/* ไอคอนกระดาน */}
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
+            </svg>
+            เปิดหน้า Analyzer-Audio
+          </Link>
+
           {/* ปุ่มออกจากระบบ (ปรับสีให้อ่อนลงนิดนึงเพื่อไม่ให้แย่งความเด่น) */}
           <button 
             onClick={handleLogout}

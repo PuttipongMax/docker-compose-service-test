@@ -155,6 +155,21 @@ services:
     networks:
       - app-network
 
+  # ----------------------------------------
+  # Audio Analysis Service (FastAPI)
+  # ----------------------------------------
+  python-audio-service:
+    build: 
+      context: ./audio-service
+    container_name: app-python-audio
+    restart: always
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./audio-service:/app
+    networks:
+      - app-network
+
 networks:
   app-network:
     driver: bridge
