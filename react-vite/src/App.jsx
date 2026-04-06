@@ -6,6 +6,7 @@ import AuthPage from './pages/AuthPage';
 import Profile from './pages/Profile';
 import KanbanPage from './pages/KanbanPage';
 import TranslatePage from './pages/TranslatePage';
+import AudioAnalyzer from './components/AudioAnalyzer';
 
 function App() {
   
@@ -30,6 +31,7 @@ function App() {
       <Route path="/profile" element={<Profile />} />
       <Route path="/kanban" element={<KanbanPage />} />
       <Route path="/translate" element={<TranslatePage />} />
+      <Route path="/audio-analyzer" element={<AudioAnalyzer />} />
     </Routes>
   );
 }

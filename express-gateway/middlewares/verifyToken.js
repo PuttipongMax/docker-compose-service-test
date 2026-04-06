@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const verifyToken = (req, res, next) => {
     // 1. ดึง Token จาก Header
     const authHeader = req.headers['authorization'];
+    if (!authHeader) return res.status(403).json({ message: "No Token" });
     // รูปแบบของ Header จะมาเป็น "Bearer eyJhbGciOiJIUzI1..." เราเลยต้อง split เอาช่องว่างออกแล้วเอาตัวที่ 2
     const token = authHeader && authHeader.split(' ')[1]; 
 
