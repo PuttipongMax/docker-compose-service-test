@@ -1,2 +1,12 @@
 .env
 node_modules/
+
+# ไม่เอาไฟล์แคชของ Python
+__pycache__/
+*.pyc
+
+# ไม่เอาไฟล์สมองกล AI
+pretrained_models/
+
+# ไม่เอาไฟล์เสียงชั่วคราว
+temp_audio/
