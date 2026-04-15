@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom'; // 👈 Import Link เพิ่มเข้ามา
+import { useNavigate, Link } from 'react-router-dom';
 
 // ไอคอนพระอาทิตย์/พระจันทร์
 const SunIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" /></svg>);
@@ -49,49 +49,59 @@ function Profile() {
           ยินดีต้อนรับ! เลือกเมนูด้านล่างเพื่อเริ่มต้นการทำงานของคุณ
         </p>
 
-        {/* 🌟 พื้นที่จัดกลุ่มปุ่ม (ใช้ space-y-4 เพื่อเว้นระยะห่างแนวตั้ง) */}
+        {/* พื้นที่จัดกลุ่มปุ่ม */}
         <div className="space-y-4">
+
+          {/* ⭐ 1. ปุ่มไปหน้า Jasmine Scanner (ใช้แท็ก <a> เพื่อกระโดดข้ามไป Svelte) */}
+          <a 
+            href="/jasmine/"
+            className="flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 px-8 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all w-full"
+          >
+            {/* ไอคอนกล้อง (Camera) */}
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            เปิดหน้า Jasmine Scanner
+          </a>
           
-          {/* ปุ่มไปหน้า Kanban (ใช้ Link เพื่อให้สลับหน้าแบบไม่โหลดใหม่) */}
+          {/* ปุ่มไปหน้า Kanban */}
           <Link 
             to="/kanban"
             className="flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-3 px-8 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all w-full"
           >
-            {/* ไอคอนกระดาน */}
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
             </svg>
             เปิดกระดาน Kanban
           </Link>
 
-          {/* ปุ่มไปหน้า Kanban (ใช้ Link เพื่อให้สลับหน้าแบบไม่โหลดใหม่) */}
+          {/* ปุ่มไปหน้า Translate */}
           <Link 
             to="/translate"
             className="flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-3 px-8 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all w-full"
           >
-            {/* ไอคอนกระดาน */}
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
             </svg>
-            เปิดหน้า Traslate (CN:TH:EN)
+            เปิดหน้า Translate (CN:TH:EN)
           </Link>
 
-          {/* ปุ่มไปหน้า audio (ใช้ Link เพื่อให้สลับหน้าแบบไม่โหลดใหม่) */}
+          {/* ปุ่มไปหน้า Audio */}
           <Link 
             to="/audio-analyzer"
             className="flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-3 px-8 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all w-full"
           >
-            {/* ไอคอนกระดาน */}
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
             </svg>
             เปิดหน้า Analyzer-Audio
           </Link>
 
-          {/* ปุ่มออกจากระบบ (ปรับสีให้อ่อนลงนิดนึงเพื่อไม่ให้แย่งความเด่น) */}
+          {/* ปุ่มออกจากระบบ */}
           <button 
             onClick={handleLogout}
-            className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 font-bold py-3 px-8 rounded-lg border border-red-200 dark:border-red-800 transition-all w-full"
+            className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 font-bold py-3 px-8 rounded-lg border border-red-200 dark:border-red-800 transition-all w-full mt-6"
           >
             ออกจากระบบ
           </button>
