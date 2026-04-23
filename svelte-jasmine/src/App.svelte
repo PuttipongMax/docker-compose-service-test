@@ -1,27 +1,29 @@
 <script>
   import { onMount, onDestroy, tick } from 'svelte';
   import { db } from './db.js';
-  import { io } from 'socket.io-client';
 
   let videoElement;
-  let canvasElement;
+  let canvasElement; // ใช้สำหรับดึงภาพส่งให้ Server
+  let overlayCanvasElement; // ⭐ เพิ่มใหม่: ใช้สำหรับวาดกรอบสี่เหลี่ยมทับบนวิดีโอ
   let scansCount = 0;
   let stream;
   let errorMsg = '';
   
-  // ตัวแปรสำหรับ Socket และ Live Stream
-  const NGINX_URL = '/'; 
+  // ⭐ ตั้งค่า URL สำหรับ Python WebSocket (พอร์ต 8003 ตามที่คุณกำหนด)
+  // ใช้ window.location.hostname เพื่อให้รองรับเวลาเปิดผ่านมือถือในวง LAN เดียวกัน
+  const WS_URL = `ws://${window.location.hostname}:8003/ws/scanner`; 
   let socket;
-  let broadcastInterval; 
   
   // ตัวแปรเช็คสถานะ
   let isCheckingAuth = true;
   let hasMediaPermission = false; 
-  let isPermissionDenied = false; // ⭐ เพิ่มตัวแปรเช็คว่าโดนบล็อกสิทธิ์ไหม
-
-  // ⭐ เพิ่มตัวแปรสถานะการเปิด/ปิด ของกล้องและไมค์
+  let isPermissionDenied = false;
   let isVideoEnabled = true;
   let isAudioEnabled = true;
+
+  // ⭐ ตัวแปรควบคุมการส่งภาพ (Ping-Pong)
+  let isProcessing = false; 
+  let streamingLoopId;
 
   const loadOfflineCount = async () => {
     scansCount = await db.scans.where('is_synced').equals(0).count();
@@ -37,19 +39,37 @@
 
     isCheckingAuth = false;
 
-    socket = io(NGINX_URL, {
-      path: '/socket.io/',
-      auth: { token: myToken }
-    });
+    // ⭐ 1. สร้างการเชื่อมต่อ Native WebSocket (ส่ง Token ไปทาง Query String)
+    socket = new WebSocket(`${WS_URL}?token=${myToken}`);
 
-    socket.on('connect_error', (err) => {
-      console.error('Socket error:', err.message);
-      if (err.message.includes('Authentication error')) {
+    socket.onopen = () => {
+      console.log('✅ เชื่อมต่อ WebSocket สำเร็จ');
+    };
+
+    // ⭐ 2. รอรับผลลัพธ์จาก Python AI
+    socket.onmessage = (event) => {
+      try {
+        const aiResult = JSON.parse(event.data);
+        drawBoundingBox(aiResult); // นำข้อมูลไปวาดกรอบ
+      } catch (e) {
+        console.error("Error parsing AI result", e);
+      } finally {
+        isProcessing = false; // ปลดล็อกให้ส่งเฟรมต่อไปได้
+      }
+    };
+
+    socket.onerror = (error) => {
+      console.error('❌ WebSocket error:', error);
+    };
+
+    socket.onclose = (event) => {
+      console.log('🔴 WebSocket ปิดการเชื่อมต่อ', event.code);
+      if (event.code === 4001 || event.code === 4003) { // สมมติว่า 400x คือ Token หมดอายุจากฝั่ง Python
         alert("เซสชันหมดอายุ กรุณาล็อกอินใหม่");
         localStorage.removeItem('token');
         window.location.href = '/auth';
       }
-    });
+    };
 
     loadOfflineCount();
   });
@@ -59,16 +79,12 @@
     isPermissionDenied = false;
     
     try {
-      // ⭐ แก้จุดที่ 1: ใช้ ideal เพื่อบอกว่า "ขอกล้องหลังนะ แต่ถ้าไม่มี (เช่น เล่นบนคอม) เอากล้องอะไรมาก็ได้"
       stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: { ideal: 'environment' } },
         audio: true 
       });
 
-      // ⭐ แก้จุดที่ 2: เปลี่ยนสถานะให้ Svelte วาดแท็ก <video> ขึ้นมาบนจอก่อน
       hasMediaPermission = true; 
-
-      // ⭐ แก้จุดที่ 3: รอเศษเสี้ยววินาที ให้ UI วาดเสร็จก่อน ค่อยเอาภาพยัดใส่กล่อง
       await tick();
 
       if (videoElement) {
@@ -76,53 +92,105 @@
         videoElement.muted = true; 
       }
 
-      hasMediaPermission = true; 
-
-      broadcastInterval = setInterval(() => {
-        // ถ้าปิดกล้องอยู่ ไม่ต้องดึงภาพส่งไป
-        if (!videoElement || !canvasElement || !socket.connected || !isVideoEnabled) return;
-        
-        canvasElement.width = videoElement.videoWidth;
-        canvasElement.height = videoElement.videoHeight;
-        const ctx = canvasElement.getContext('2d');
-        ctx.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
-        
-        const liveFrame = canvasElement.toDataURL('image/jpeg', 0.3);
-        socket.emit('video-frame', liveFrame);
-      }, 150);
+      // เริ่มต้นลูปส่งภาพ
+      startStreamingLoop();
 
     } catch (err) {
       console.error("Error accessing media:", err);
-      isPermissionDenied = true; // ⭐ แจ้งระบบว่าโดนบล็อก
+      isPermissionDenied = true;
     }
   };
 
-  // ⭐ ฟังก์ชันเปิด/ปิดกล้อง
+  // ⭐ 3. ฟังก์ชันดึงภาพและส่งไปแบบ Binary
+  const sendFrameToServer = () => {
+    // ถ้าปิดกล้อง, Socket ยังไม่พร้อม, หรือกำลังประมวลผลรูปเก่าอยู่ -> ให้ข้ามไปเลย
+    if (!videoElement || !canvasElement || socket?.readyState !== WebSocket.OPEN || !isVideoEnabled || isProcessing) {
+      return;
+    }
+
+    isProcessing = true; // ล็อกสถานะไว้ รอจนกว่า AI จะตอบกลับ
+
+    // ดึงภาพลง Canvas
+    canvasElement.width = videoElement.videoWidth;
+    canvasElement.height = videoElement.videoHeight;
+    const ctx = canvasElement.getContext('2d');
+    ctx.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+    
+    // แปลงภาพเป็น Binary (Blob) แบบบีบอัด 50% แล้วส่งเข้า WebSocket ทันที
+    canvasElement.toBlob((blob) => {
+      if (blob) {
+        socket.send(blob);
+      } else {
+        isProcessing = false; // ถ้าแปลงภาพพลาด ให้ปลดล็อก
+      }
+    }, 'image/jpeg', 0.5); 
+  };
+
+  // ลูปควบคุมการส่งภาพที่ปลอดภัยกว่า setInterval
+  const startStreamingLoop = () => {
+    const loop = () => {
+      sendFrameToServer();
+      // เรียกตัวเองซ้ำไปเรื่อยๆ (เบราว์เซอร์จะจัดการความเร็วให้เหมาะสม)
+      streamingLoopId = requestAnimationFrame(loop); 
+    };
+    streamingLoopId = requestAnimationFrame(loop);
+  };
+
+  // ⭐ 4. ฟังก์ชันวาดกรอบสี่เหลี่ยม (Bounding Box) ทับบนจอ
+  const drawBoundingBox = (aiResult) => {
+    if (!overlayCanvasElement || !videoElement) return;
+
+    overlayCanvasElement.width = videoElement.videoWidth;
+    overlayCanvasElement.height = videoElement.videoHeight;
+    const ctx = overlayCanvasElement.getContext('2d');
+    
+    // ล้างภาพวาดเก่าออกก่อน
+    ctx.clearRect(0, 0, overlayCanvasElement.width, overlayCanvasElement.height);
+
+    // สมมติว่า Python ส่งข้อมูลกลับมาในรูปแบบ { objects: [{label: "ดอกตูม", x: 50, y: 50, w: 100, h: 100}] }
+    if (aiResult.objects && aiResult.objects.length > 0) {
+      aiResult.objects.forEach(obj => {
+        // วาดกรอบสี่เหลี่ยม
+        ctx.strokeStyle = '#00FF00'; // สีเขียว
+        ctx.lineWidth = 3;
+        ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
+
+        // วาดพื้นหลังข้อความ
+        ctx.fillStyle = '#00FF00';
+        ctx.fillRect(obj.x, obj.y - 25, 120, 25);
+
+        // วาดข้อความ (ชื่อระยะดอกมะลิ)
+        ctx.fillStyle = '#000000';
+        ctx.font = '16px sans-serif';
+        ctx.fillText(obj.label, obj.x + 5, obj.y - 7);
+      });
+    }
+  };
+
   const toggleVideo = () => {
     if (stream) {
       const videoTrack = stream.getVideoTracks()[0];
       if (videoTrack) {
-        isVideoEnabled = !isVideoEnabled; // สลับสถานะ
-        videoTrack.enabled = isVideoEnabled; // สั่งเปิด/ปิด Track
+        isVideoEnabled = !isVideoEnabled; 
+        videoTrack.enabled = isVideoEnabled; 
       }
     }
   };
 
-  // ⭐ ฟังก์ชันเปิด/ปิดไมค์
   const toggleAudio = () => {
     if (stream) {
       const audioTrack = stream.getAudioTracks()[0];
       if (audioTrack) {
-        isAudioEnabled = !isAudioEnabled; // สลับสถานะ
-        audioTrack.enabled = isAudioEnabled; // สั่งเปิด/ปิด Track
+        isAudioEnabled = !isAudioEnabled; 
+        audioTrack.enabled = isAudioEnabled; 
       }
     }
   };
 
   onDestroy(() => {
-    if (broadcastInterval) clearInterval(broadcastInterval); 
+    if (streamingLoopId) cancelAnimationFrame(streamingLoopId); 
     if (stream) stream.getTracks().forEach(track => track.stop()); 
-    if (socket) socket.disconnect(); 
+    if (socket) socket.close(); 
   });
 
   const captureAndSaveOffline = async () => {
@@ -130,12 +198,11 @@
       alert("กรุณาเปิดกล้องก่อนถ่ายภาพ");
       return;
     }
-
+    // (เก็บโค้ดถ่ายภาพ Offline ไว้เหมือนเดิม)
     canvasElement.width = videoElement.videoWidth;
     canvasElement.height = videoElement.videoHeight;
     const ctx = canvasElement.getContext('2d');
     ctx.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
-    
     const base64Image = canvasElement.toDataURL('image/jpeg', 0.7);
 
     try {
@@ -145,7 +212,6 @@
         timestamp: new Date().toISOString(),
         is_synced: 0
       });
-      
       alert('📸 บันทึกข้อมูลลงเครื่อง (Offline) สำเร็จ!');
       loadOfflineCount();
     } catch (error) {
@@ -166,7 +232,6 @@
       <div style="background: white; padding: 30px; border-radius: 12px; text-align: center; margin-top: 20px;">
         <h2 style="color: #d32f2f; margin-top: 0;">⚠️ ไม่สามารถเข้าถึงกล้องได้</h2>
         <p style="color: #333;">ดูเหมือนว่าคุณจะเคยปฏิเสธการเข้าถึงกล้องไว้ครับ</p>
-        
         <div style="background: #f0f0f0; padding: 15px; border-radius: 8px; margin: 20px 0; text-align: left; color: #333;">
           <strong>วิธีแก้ไขง่ายๆ:</strong>
           <ol style="margin-bottom: 0; padding-left: 20px;">
@@ -190,13 +255,22 @@
         </button>
       </div>
     {:else}
-      <video 
-        bind:this={videoElement} 
-        autoplay 
-        playsinline 
-        muted
-        style="width: 100%; border-radius: 8px; background-color: #000; box-shadow: 0 4px 6px rgba(0,0,0,0.5); opacity: {isVideoEnabled ? 1 : 0.3}; transition: opacity 0.3s;" 
-      ></video>
+      <div style="position: relative; width: 100%; border-radius: 8px; overflow: hidden; background-color: #000; box-shadow: 0 4px 6px rgba(0,0,0,0.5);">
+        
+        <video 
+          bind:this={videoElement} 
+          autoplay 
+          playsinline 
+          muted
+          style="width: 100%; display: block; opacity: {isVideoEnabled ? 1 : 0.3}; transition: opacity 0.3s;" 
+        ></video>
+
+        <canvas 
+          bind:this={overlayCanvasElement} 
+          style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; opacity: {isVideoEnabled ? 1 : 0};"
+        ></canvas>
+
+      </div>
       
       <div style="display: flex; gap: 10px; margin-top: 15px;">
         <button 

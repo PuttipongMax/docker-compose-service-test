@@ -131,6 +131,9 @@ services:
       - react-vite
       - express-api-gateway
       - php-apache
+      - java-spring
+      - python-ws-service
+      - svelte-jasmine
     networks:
       - app-network
 
@@ -187,24 +190,51 @@ services:
       - VITE_API_GATEWAY_URL=http://localhost:3000
     networks:
       - app-network
-      
+
   # ----------------------------------------
-  # Dedicated Socket.io Service
+  # Python WebSocket Service (FastAPI)
   # ----------------------------------------
-  socket-service:
-    build: ./node-socket-service
-    container_name: app-socket-service
+  python-ws-service: # เปลี่ยนชื่อ Service
+    build: ./python-ws-service # ชี้ไปที่โฟลเดอร์ใหม่
+    container_name: app-ws-service # เปลี่ยนชื่อ Container
     restart: always
     environment:
-      # ส่ง Secret Key จากไฟล์ .env เข้าไปให้มันตรวจสอบ Token ได้ตรงกับ Gateway
       - JWT_SECRET=${JWT_SECRET_KEY}
     ports:
-      - "3001:3001"
+      - "8003:8003"
     volumes:
-      - ./node-socket-service:/app
-      - /app/node_modules
+      - ./python-ws-service:/app # ชี้ไปที่โฟลเดอร์ใหม่
     networks:
       - app-network
+  
+  rust-wasm-builder:
+    build: 
+      context: ./rust-wasm
+    container_name: app-rust-builder
+    # Map Volumes เพื่อให้ Container เห็นโค้ดต้นฉบับ
+    volumes:
+      - ./rust-wasm:/app
+      # ⭐ ทริคเด็ด: Map โฟลเดอร์ output ทะลุไปหาโปรเจกต์ Svelte เลย
+      # เมื่อ build เสร็จ ไฟล์ .wasm และ .js จะไปโผล่ใน Svelte พร้อมใช้ทันที
+      - ./app-svelte-jasmine/src/pkg:/app/pkg
+      
+  # # ----------------------------------------
+  # # Dedicated Socket.io Service
+  # # ----------------------------------------
+  # socket-service:
+  #   build: ./node-socket-service
+  #   container_name: app-socket-service
+  #   restart: always
+  #   environment:
+  #     # ส่ง Secret Key จากไฟล์ .env เข้าไปให้มันตรวจสอบ Token ได้ตรงกับ Gateway
+  #     - JWT_SECRET=${JWT_SECRET_KEY}
+  #   ports:
+  #     - "3001:3001"
+  #   volumes:
+  #     - ./node-socket-service:/app
+  #     - /app/node_modules
+  #   networks:
+  #     - app-network
 
 networks:
   app-network:

@@ -1,0 +1,6 @@
+fastapi==0.109.2
+uvicorn==0.27.1
+websockets==12.0
+numpy==1.26.4
+opencv-python-headless==4.9.0.80
+python-jose[cryptography]==3.3.0
