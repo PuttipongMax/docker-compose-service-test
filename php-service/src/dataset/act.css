@@ -1,0 +1,270 @@
+html, body {
+    /* ปิด Scrollbar ของ Browser และกำหนดความสูงเต็มจอ */
+    overflow: hidden; 
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: Tahoma, Geneva, sans-serif;
+    color: #333333;
+    font-size: 12px;
+}
+
+* { scrollbar-width: thin; scrollbar-color: #c1c1c1 #f1f1f1; }
+H1 {font-family:tahoma; color : #333333; font-size:28px;}
+A { color : #333333; font-size:12px; text-decoration:none;}
+A:hover { color : #8B8B8B; font-size:12px; text-decoration:none;}
+A:visited { color : #333333; font-size:12px; text-decoration:none;} 
+input,select{font-family:tahoma; color : #333333; font-size:12px;}
+.header{
+    text-align:center;       
+}
+.wrapper{
+    width:700; float:center; padding:5px;
+}
+legend{
+    font-family: Tahoma;
+    font-size: 14px;    
+    color: #0000CC;
+}
+legend A{ color : #0000CC; font-size: 14px; text-decoration:none;}
+legend A:hover{ color : #0000CC; font-size: 14px; text-decoration:none;}
+legend A:visited{ color : #0000CC; font-size: 14px; text-decoration:none;}
+fieldset{
+    padding:3px;
+}
+.text_gray{
+    color:gray;
+}
+.text_comment{
+    color:red;
+    font-size: 11px;
+}
+.odd{
+    background-color:#EDF8FE;
+    font-size:11px
+}
+.even{
+    background-color:#D5EFFD;
+    font-size:11px
+}
+
+#divinterest {
+    position: absolute;
+    top: 0px;
+    right: -20px;
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size: 25px;
+    font-weight: bold;
+    color: #dc0000;
+    text-decoration: none;
+    line-height: 30px;
+    height: 30px;
+    overflow: auto;
+}
+#divmain {
+    position: relative;
+}
+
+/************************************************
+ * CSS ที่ใช้ใน ReportRenderer.js 
+ ************************************************/
+.btn { padding: 5px 15px; border: none; border-radius: 3px; cursor: pointer; color: white; }
+.btn-add { background-color: #007bff; }
+.btn-add:hover { background-color: #0056b3; }
+.btn-save-new { background-color: #28a745; } 
+.btn-save-new:hover { background-color: #218838; }
+.btn-submit { background-color: #28a745; }
+.btn-submit:hover { background-color: #218838; }
+.btn-back { background-color: #6c757d; }
+.btn-back:hover { background-color: #5a6268; }
+.btn-compare { background-color: #fd7e14; }
+.btn-compare:hover { background-color: #e8700d; }
+
+.btnContainer{ display:flex; gap:4px;}
+.btn-edit { background-color: #aab0b4; cursor:pointer; border:none; border-radius:4px;
+    padding-left:8px; padding-right:8px; padding-top:4px; padding-bottom:4px;
+}
+.btn-edit:hover { opacity:0.8; }
+.btn-delete { background-color: #aab0b4; cursor:pointer;  border:none; border-radius:4px;
+    padding-left:8px; padding-right:8px; padding-top:4px; padding-bottom:4px;
+}
+.btn-delete:hover { opacity:0.8; }
+/* th { font-size: 8px; }
+td { font-size: 12px; } */
+.table-scroll-wrapper {
+    /* กำหนดกรอบให้ชัดเจน */
+    overflow: auto; /* ให้มี Scrollbar อัตโนมัติเมื่อเนื้อหาล้น */
+    position: relative;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 100%;
+    /* height: จะถูกกำหนดจาก JS (calc(100vh - ...)) */
+}
+.report-table {
+    width: 100%;
+    border-collapse: separate; border-spacing: 0; /* รวมเส้นขอบให้เป็นเส้นเดียว */
+    border-spacing: 0; 
+}
+/* --- หัวตาราง (สีฟ้าอ่อน) --- */
+.report-table th {
+    background-color: #79BCFF; /* (สีฟ้าอ่อนจากภาพที่ 2) */
+    color: #333; /* (สีอักษรเข้ม) */
+    font-weight: bold;
+    padding: 10px 8px;
+    border: 1px solid #c7d7e8; /* (เส้นขอบสีฟ้าที่เข้มขึ้นเล็กน้อย) */
+    white-space: nowrap;
+}
+/* --- เซลล์ข้อมูล (สีขาว) --- */
+.report-table td {
+    padding: 8px;
+    border: 1px solid #e0e0e0; /* (เส้นขอบสีเทาอ่อน) */
+    background-color: #ffffff;
+    vertical-align: top; /* (เผื่อข้อมูลหลายบรรทัด) */
+}
+/* (ทางเลือก) ทำให้แถวสลับสี (ถ้าต้องการ) */
+.report-table tbody tr:nth-child(even) td {
+    background-color: #f9f9f9; 
+}
+
+#popup-container {
+    display: none; 
+    position: fixed; 
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%);
+    background: white; 
+    border: 1px solid #ccc; 
+    padding: 20px; 
+    z-index: 1000;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    max-height: 80vh; /* เพิ่ม scrollbar ถ้าสูงไป */
+    overflow-y: auto; 
+}
+/* (ทางเลือก) CSS สำหรับตาราง และแถวที่คลิกได้ */
+.dynamic-table { border-collapse: collapse; width: 100%; }
+.dynamic-table th, .dynamic-table td { border: 1px solid #ddd; padding: 8px; }
+/* .dynamic-table th { background-color: #f2f2f2; } */
+.table-row-clickable:hover { background-color: #f5f5f5; cursor: pointer; }
+
+/* Container for the cell content to remove default padding/margins */
+.nested-cell-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+/* Individual item style */
+.nested-list-item {
+    /* Fixed height is key for alignment across columns */
+    height: 30px; 
+    line-height: 30px; /* Vertically center text */    
+    padding: 0 4px;
+    border-bottom: 1px dashed #e0e0e0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Add ... if text is too long */
+    /* box-sizing: border-box; */
+}
+
+/* Remove border for the last item to look cleaner */
+.nested-list-item:last-child {
+    border-bottom: none;
+}
+
+/* Ensure the TD has no padding so our div takes full space */
+.report-table td.has-nested-data {
+    padding: 0 !important;
+    vertical-align: top;
+}
+
+/* ***********************************************
+* CSS หน้า frm_compare.php
+*********************************************** */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+.container { display: flex; flex-direction:row; justify-content:center; gap: 36px; padding: 10px; }
+.column { width: 48%; }
+.single-view-column { width: 80%; margin: auto; }
+h3 { text-align: center; }
+th { font-size: 10px; }
+table { border-collapse: collapse; width: 100%; border: 1px solid #ccc;}
+th, td { padding: 5px; border: 1px solid #eee; }
+.row-added td { background-color: #d4edda !important; }
+.row-removed td { background-color: #f8d7da !important; }
+.cell-modified { background-color: #fff3cd !important; }
+.header-row { background-color: #79BCFF; color: white; font-weight: bold; }
+.empty-row td { background-color: #f0f0f0 !important; height: 26px; }
+
+/* * ตารางที่ 1 (ข้อมูลเก่า)
+ * เราจะทำให้หัวตารางเป็นสีเทา
+*/
+.compare-table-old .header-row {
+    background-color: #f0f0f0; /* สีเทาอ่อน */
+    color: #333; /* สีตัวอักษรเข้ม */
+}
+
+/* * ตารางที่ 2 (ข้อมูลล่าสุด)
+ * เราจะทำให้หัวตารางเป็นสีฟ้า (หรือสีหลักของเว็บคุณ)
+*/
+.compare-table-latest .header-row {
+    background-color: #e0e8ff; /* สีฟ้าอ่อน (ตัวอย่าง) */
+    color: #002d9c; /* สีน้ำเงินเข้ม (ตัวอย่าง) */
+    border-bottom: 2px solid #002d9c;
+}
+
+/* * (ตัวเลือก) ถ้าอยากให้เส้นขอบตารางสีต่างกันด้วย 
+*/
+.compare-table-old {
+    border: 1px solid #ccc;
+}
+.compare-table-latest {
+    border: 1px solid #002d9c;
+}
+
+.container {
+    display: flex;
+    gap: 20px; 
+    width: 100%;
+}
+
+/* 2. ทำให้ .column (แต่ละคอลัมน์) กว้างเท่ากัน (50/50) */
+.column {
+    /* นี่คือ key! ทำให้ทั้ง 2 column แบ่งพื้นที่เท่ากัน */    
+    flex: 1; 
+    /* [สำคัญมาก] ถ้าตารางล้น 50% ให้ .column มี scrollbar แนวนอนของตัวเอง */
+    overflow-x: auto; 
+}
+
+/* 3. ทำให้ตารางใช้พื้นที่เต็ม .column */
+.column .compare-table {
+    width: 100%;
+    border-collapse: collapse; /* (แนะนำ) ทำให้เส้นขอบสวยขึ้น */
+}
+
+/* 4. [สำคัญ] แก้ปัญหาตัวเลข/ข้อความปัดบรรทัด (ตามรูปที่คุณส่งมา) */
+.column .compare-table th,
+.column .compare-table td {
+    /*บังคับให้ข้อความอยู่บรรทัดเดียว ไม่ตัดคำ */
+    white-space: nowrap; 
+    /* (แนะนำ) เพิ่มช่องว่างในช่องตาราง */
+    padding: 8px;
+}
+.btn-undo:hover{
+    opacity: 0.6;
+}
+.badge {
+    display: inline-block;
+    padding: 2px 6px;
+    font-size: 0.85em;
+    font-weight: bold;
+    color: #fff;
+    background-color: #6c757d;
+    border-radius: 4px;
+    margin-right: 4px;
+}
